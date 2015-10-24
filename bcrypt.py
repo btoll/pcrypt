@@ -78,12 +78,7 @@ def decrypt_file(filename, output):
         if decrypted.ok:
             print('File decryption successful.')
 
-            # Only offer to remove original file if not editing in place!
-            if output != filename:
-                resp = input('Remove original encrypted file? [y|N]: ')
-                if resp in ['Y', 'y']:
-                    os.remove(filename)
-
+            _maybe_remove_file(filename, output)
             sys.exit(0)
         else:
             #print('Error: ' + decrypted.stderr)
@@ -147,12 +142,7 @@ def encrypt_file(filename, **kwargs):
             # Push to server.
             lib.server.prepare(output)
 
-        # Only offer to remove original file if not editing in place!
-        if output != filename:
-            resp = input('Remove original decrypted file? [y|N]: ')
-            if resp in ['Y', 'y']:
-                os.remove(filename)
-
+        _maybe_remove_file(filename, output)
         sys.exit(0)
     else:
         print('Error: ' + encrypted.stderr)
@@ -169,6 +159,13 @@ def _get_passphrase():
 
     except (KeyboardInterrupt, EOFError):
         _abort()
+
+def _maybe_remove_file(filename, output):
+    # Only offer to remove original file if not editing in place!
+    if output != filename:
+        resp = input('Remove original file? [y|N]: ')
+        if resp in ['Y', 'y']:
+            os.remove(filename)
 
 def _setup():
     return lib.gnupg.GPG(gnupghome=os.getenv('CRYPT_GNUPGHOME', '/Users/btoll/.gnupg'), gpgbinary=os.getenv('CRYPT_GPGBINARY', 'gpg'))
